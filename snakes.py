@@ -87,7 +87,7 @@ class PPO():
                     action_prob = action_prob
                 else:
                     action_prob = torch.tensor(np.random.uniform(low=0, high=1, size=(1,4)))
-                self.eps*=0.99999
+                self.eps*=0.9999
                 self.eps=max(self.eps,0.01)
             else:
                 action_prob = action_prob
@@ -145,14 +145,9 @@ class PPO():
                 # epoch iteration, PPO core!!!
                 #根据action,选出其在actor网络训练得到对应的 action_prob
                 action_prob = self.actor_net(state[index]).gather(1, action[index])  # new policy
-                try:
-                    c = Categorical(action_prob)
-                    entropy_loss=c.entropy().mean()
-                    #  entropy = -(action_prob*torch.log(old_action_log_prob+1.e-10)+ \
-                    #  (1.0-action_prob)*torch.log(1.0-old_action_log_prob+1.e-10))
 
-                except:
-                    print('action_prob',action_prob)
+                entropy_loss = -(action_prob * torch.log(old_action_log_prob[index] + 1.e-10) + \
+                                (1.0-action_prob)*torch.log(1.0-old_action_log_prob[index]+1.e-10)).mean()
                 a=torch.tensor(1e-5,requires_grad=True)
                 ratio = action_prob / torch.maximum(old_action_log_prob[index],a.repeat(action_prob.shape,1))
                 surr1 = ratio * advantage
