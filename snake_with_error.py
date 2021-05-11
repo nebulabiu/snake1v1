@@ -93,10 +93,8 @@ class PPO():
                 action_prob = action_prob
         c = Categorical(action_prob)
         action = c.sample()
-        #todo:这里的probs加起来不为1
-        # 可以用        prob=c.probs[action.item()] 转换
-  #      self.eps*=0.99999
-     #   self.eps=max(self.eps,0.10)
+        #todo:the sum of probs here not equals 1
+        # can let prob=c.probs[action.item()] to solve this
         return action.item(), action_prob[:, action.item()].item()
 
     def save_param(self):
@@ -124,7 +122,6 @@ class PPO():
 
         R = 0
         Gt = []
-        #TODO: 计算return
         for r in reward[::-1]:
             R = r + self.gamma * R
             Gt.insert(0, R)
@@ -232,35 +229,6 @@ def joint_action_func(action, state, info, opponent_policy):
 def greedy_snake(state,info):
     pass
 
-# def get_log():
-#     logger=logging.getLogger()
-#     logger.handlers.clear()
-#     logger.setLevel(logging.INFO)
-#
-#     log_path=os.path.abspath(os.path.join(os.getcwd()))+'logs'
-#     if os.path.exists(log_path) and os.path.isdir(log_path):
-#         pass
-#     else:
-#         os.mkdir(log_path)
-#
-#     nowTime=time.strftime('%Y-%m-%d')
-#     logname=log_path+nowTime+'.log'
-#     fp=open(logname,'a')
-#     fp.close()
-#
-#     fh = logging.FileHandler(logname, encoding='utf-8')  # 指定utf-8格式编码，避免输出的日志文本乱码
-#     fh.setLevel(logging.INFO)
-#
-#     # 定义handler的输出格式
-#     formatter = logging.Formatter('%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
-#
-#     fh.setFormatter(formatter)
-#
-#     # 给logger添加handler
-#     logger.addHandler(fh)
-#     return logger
-
-
 def main(args):
     # Parameters
     game='snakes_1v1'
@@ -299,7 +267,7 @@ def main(args):
             #if render: env.render()
 
             for t in count():
-                # todo:select action是否加噪声
+                # todo:select action with noise
                 action, action_prob = agent.select_action(observation,train=True)
                 joint_action = joint_action_func(action, state, info,opponent_policy)
                 next_state, reward, done, _,info = env.step(env.encode(joint_action))
