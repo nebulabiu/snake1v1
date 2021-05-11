@@ -93,10 +93,6 @@ class PPO():
                 action_prob = action_prob
         c = Categorical(action_prob)
         action = c.sample()
-        #todo:这里的probs加起来不为1
-        # 可以用        prob=c.probs[action.item()] 转换
-  #      self.eps*=0.99999
-     #   self.eps=max(self.eps,0.10)
         return action.item(), action_prob[:, action.item()].item()
 
     def save_param(self):
@@ -143,7 +139,6 @@ class PPO():
                 delta = Gt_index - V
                 advantage = delta.detach()
                 # epoch iteration, PPO core!!!
-                #根据action,选出其在actor网络训练得到对应的 action_prob
                 action_prob = self.actor_net(state[index]).gather(1, action[index])  # new policy
 
                 entropy_loss = -(action_prob * torch.log(old_action_log_prob[index] + 1.e-10) + \
@@ -229,34 +224,6 @@ def joint_action_func(action, state, info, opponent_policy):
 
 def greedy_snake(state,info):
     pass
-
-# def get_log():
-#     logger=logging.getLogger()
-#     logger.handlers.clear()
-#     logger.setLevel(logging.INFO)
-#
-#     log_path=os.path.abspath(os.path.join(os.getcwd()))+'logs'
-#     if os.path.exists(log_path) and os.path.isdir(log_path):
-#         pass
-#     else:
-#         os.mkdir(log_path)
-#
-#     nowTime=time.strftime('%Y-%m-%d')
-#     logname=log_path+nowTime+'.log'
-#     fp=open(logname,'a')
-#     fp.close()
-#
-#     fh = logging.FileHandler(logname, encoding='utf-8')  # 指定utf-8格式编码，避免输出的日志文本乱码
-#     fh.setLevel(logging.INFO)
-#
-#     # 定义handler的输出格式
-#     formatter = logging.Formatter('%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
-#
-#     fh.setFormatter(formatter)
-#
-#     # 给logger添加handler
-#     logger.addHandler(fh)
-#     return logger
 
 
 def main(args):
